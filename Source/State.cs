@@ -14,47 +14,62 @@ namespace UseBestMaterials {
             = new ConditionalWeakTable<Bill, State>();
 
         public static State For(Bill bill, bool create = false) {
+            if (bill == null) return null;
             if (create) return states.GetValue(bill, b => new State(b));
             if (states.TryGetValue(bill, out State state)) return state;
             return null;
         }
 
         private bool active = false;
-        private readonly StuffComparer comparer;
+        private readonly StuffComparerForThing forThing;
+        private readonly StuffComparerBasic basic;
 
         private State(Bill bill) 
-            => comparer = StuffComparer.For(bill.recipe?.ProducedThingDef);
+            => (forThing, basic) = StuffComparers.For(bill.recipe?.ProducedThingDef);
 
         public bool Active => active;
 
-        public bool Valid => comparer != null;
+        public bool Valid => forThing != null;
 
-        public StuffComparer Comparer => comparer.NoCell();
+        public void CopyFrom(Bill bill) {
+            var from = For(bill);
+            if (from != null && from.Valid && Valid) {
+                active = from.active;
+                forThing.CopyFrom(from.forThing);
+            }
+        }
 
-        public StuffComparer ComparerFor(IntVec3 cell) => comparer.ForCell(cell);
+        public StuffComparerBasic ForStuff => basic;
+
+        public StuffComparerForThing ForThingFrom(IntVec3 cell) => forThing.ForCell(cell);
 
         public const float GUIGap    = 4f;
         public const float GUIHeight = Widgets.CheckboxSize;
         public const float GUISpace  = GUIHeight + 3 * GUIGap;
-        public const string CheckLabel = "Use best by:";
 
         public void DoGUI(Rect rect) {
             if (Valid) {
                 Text.Anchor = TextAnchor.MiddleLeft;
-                var label = rect.LeftPartPixels(Text.CalcSize(CheckLabel).x);
-                Widgets.Label(label, CheckLabel);
+                var label = rect.LeftPartPixels(Text.CalcSize(Strings.UseBestBy).x);
+                Widgets.Label(label, Strings.UseBestBy);
                 rect.xMin += label.width + 2 * GUIGap;
                 rect.xMax -= Widgets.CheckboxSize + 2 * GUIGap;
-                comparer.DoButton(rect);
+                forThing.DoButton(rect);
                 Widgets.Checkbox(rect.xMax + 2 * GUIGap, rect.y, ref active);
                 GenUI.ResetLabelAlign();
             }
         }
 
+        public void DoSortButton(Rect rect) 
+            => basic?.DoButton(rect);
+
+        public void AugmentIngredientDescription(ThingDef stuff, ref string description) 
+            => basic?.AugmentIngredientDescription(stuff, ref description);
+
         public void ExposeData() {
-            if (comparer != null && Scribe.EnterNode(Strings.ID)) {
+            if (forThing != null && Scribe.EnterNode(Strings.ID)) {
                 Scribe_Values.Look(ref active, "active");
-                comparer.ExposeData();
+                forThing.ExposeData();
                 Scribe.ExitNode();
             }
         }

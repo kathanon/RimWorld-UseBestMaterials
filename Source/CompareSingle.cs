@@ -8,6 +8,11 @@ using Verse;
 
 namespace UseBestMaterials {
     public class CompareSingle : ICompareFor, IExposable {
+        public static readonly HashSet<StatDef> InvertFor = new HashSet<StatDef>{
+            StatDefOf.Flammability,
+            StatDefOf.WorkToMake,
+        };
+
         private StatDef stat;
         private string label;
 
@@ -24,10 +29,25 @@ namespace UseBestMaterials {
 
         public string Label => label;
 
+        public StatDef Stat => stat;
+
         public string Tooltip => stat.LabelForFullStatListCap;
 
-        public int Compare(ThingDef thing, ThingDef stuffX, ThingDef stuffY) 
-            => Math.Sign(thing.GetStatValueAbstract(stat, stuffY) - thing.GetStatValueAbstract(stat, stuffX));
+        public ICompareFor Copy() {
+            return new CompareSingle() {
+                stat = stat,
+                label = label,
+            };
+        }
+
+        public int Compare(ThingDef thing, ThingDef stuffX, ThingDef stuffY)
+            => Math.Sign(Value(thing, stuffY, stat) - Value(thing, stuffX, stat));
+
+        public static float Value(ThingDef thing, ThingDef stuff, StatDef stat) 
+            => StatValue(thing, stuff, stat) * (InvertFor.Contains(stat) ? -1 : 1);
+
+        private static float StatValue(ThingDef thing, ThingDef stuff, StatDef stat) 
+            => (stuff.stuffProps != null) ? thing.GetStatValueAbstract(stat, stuff) : 0f;
 
         public void ExposeData() {
             Scribe_Defs.Look(ref stat, "stat");

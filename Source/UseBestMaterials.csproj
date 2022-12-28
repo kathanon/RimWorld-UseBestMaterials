@@ -58,8 +58,12 @@
   <!-- Project files -->
   <ItemGroup>
     <Compile Include="CompareSingle.cs" />
+    <Compile Include="Compat_BetterWorkbenchManagement.cs" />
+    <Compile Include="Compat_Math.cs" />
     <Compile Include="Patches_Bill.cs" />
     <Compile Include="StuffComparer.cs" />
+    <Compile Include="StuffComparerBasic.cs" />
+    <Compile Include="StuffComparerForThing.cs" />
     <Compile Include="ICompareFor.cs" />
     <Compile Include="CompareOrdered.cs" />
     <Compile Include="CompareWeighted.cs" />
@@ -67,6 +71,7 @@
     <Compile Include="Strings.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StuffComparers.cs" />
     <Compile Include="Textures.cs" />
   </ItemGroup>
   <!-- Include ModFiles -->

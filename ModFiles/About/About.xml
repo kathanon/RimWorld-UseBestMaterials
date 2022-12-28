@@ -5,7 +5,9 @@
 	<supportedVersions>
 		<li>1.4</li>
 	</supportedVersions>
-	<description>Automatically select the "best" available material when crafting. Several different criteria are available for determining what is "best".</description>
+	<description>Automatically select the "best" available material when crafting, when activated for a specific bill. Several different criteria are available for determining what is "best".
+
+Also shows relevant stats in tooltip for the ingredient in allowed ingredients list, and adds the ability to sort that list by different stats.</description>
 	<url>https://github.com/kathanon/RimWorld-UseBestMaterials</url>
 
 	<modDependencies>

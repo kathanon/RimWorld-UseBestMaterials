@@ -41,6 +41,13 @@ namespace UseBestMaterials {
             return 0;
         }
 
+        public ICompareFor Copy() 
+            => new CompareOrdered { 
+                parts = parts.Select(p => p.Copy()).ToList(),
+            };
+
+        public bool AllMatches(Func<ICompareFor, bool> matches) => parts.All(matches);
+
         public void ExposeData() {
             Scribe_Collections.Look(ref parts, "parts", LookMode.Deep);
             dirty = true;

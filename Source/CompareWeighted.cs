@@ -3,16 +3,18 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
+using static UnityEngine.Random;
 
 namespace UseBestMaterials {
     public class CompareWeighted : ICompareFor, IExposable {
         private List<StatDef> stats = new List<StatDef>();
         private List<float> weights = new List<float>();
-        private string label = "Weighted";
+        private string label = Strings.CompareWeightedLabel;
 
         private string tooltip;
         private bool dirty = true;
@@ -44,11 +46,21 @@ namespace UseBestMaterials {
             if (label != null) this.label = label;
         }
 
-        private float Value(ThingDef thing, ThingDef stuff, StatDef stat) 
-            => thing.GetStatValueAbstract(stat, stuff);
+        public ICompareFor Copy()
+            => new CompareWeighted() {
+                stats = stats.ToList(),
+                weights = weights.ToList(),
+                label = label,
+            };
+
+        public bool Matches((StatDef def, float weight)[] values) {
+            if (values.Length != stats.Count) return false;
+            var set = stats.ToHashSet();
+            return values.All(v => set.Contains(v.def));
+        }
 
         private float WeightedValue(ThingDef thing, ThingDef stuff) 
-            => stats.Select((s, i) => Value(thing, stuff, s) * weights[i]).Sum();
+            => stats.Select((s, i) => CompareSingle.Value(thing, stuff, s) * weights[i]).Sum();
 
         public int Compare(ThingDef thing, ThingDef stuffX, ThingDef stuffY) 
             => Math.Sign(WeightedValue(thing, stuffY) - WeightedValue(thing, stuffX));
